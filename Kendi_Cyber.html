@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cybersecurity Quiz</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#0a0c10;color:#e8edf5;font-family:'Segoe UI',Arial,sans-serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:2rem 1rem 4rem}
+.header{text-align:center;margin-bottom:2rem}
+.header .tag{font-family:monospace;font-size:.75rem;color:#00f5a0;letter-spacing:.2em;text-transform:uppercase;margin-bottom:.6rem;display:block}
+.header h1{font-size:2rem;font-weight:800;color:#e8edf5}
+.header p{color:#5a6478;font-size:.85rem;margin-top:.4rem;font-family:monospace}
+.quiz-container{width:100%;max-width:700px}
+.progress-wrap{display:flex;align-items:center;gap:1rem;margin-bottom:1.25rem}
+.progress-bar{flex:1;height:4px;background:#1e2530;border-radius:2px;overflow:hidden}
+.progress-fill{height:100%;background:linear-gradient(90deg,#00f5a0,#00c3ff);border-radius:2px;transition:width .5s ease}
+.progress-label{font-family:monospace;font-size:.75rem;color:#5a6478;white-space:nowrap}
+.card{background:#111318;border:1px solid #1e2530;border-radius:14px;padding:1.75rem;position:relative;overflow:hidden}
+.card-top-line{position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#00f5a0,#00c3ff);opacity:.7}
+.q-meta{display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem}
+.q-num{font-family:monospace;font-size:.75rem;color:#00f5a0;letter-spacing:.1em}
+.q-type{font-family:monospace;font-size:.7rem;color:#5a6478;background:#181c24;padding:.2rem .6rem;border-radius:20px;border:1px solid #1e2530}
+.category{display:inline-block;font-family:monospace;font-size:.65rem;padding:.2rem .55rem;border-radius:20px;border:1px solid #00c3ff;color:#00c3ff;margin-bottom:.75rem;letter-spacing:.06em;text-transform:uppercase}
+.question{font-size:1.1rem;font-weight:600;line-height:1.55;margin-bottom:1.5rem}
+.options{display:flex;flex-direction:column;gap:.65rem}
+.opt-btn{background:#181c24;border:1px solid #1e2530;border-radius:10px;padding:.85rem 1rem;color:#e8edf5;font-family:'Segoe UI',Arial,sans-serif;font-size:.92rem;text-align:left;cursor:pointer;transition:border-color .2s,background .2s;display:flex;align-items:flex-start;gap:.75rem}
+.opt-btn .dot{width:10px;height:10px;border-radius:50%;border:2px solid #5a6478;flex-shrink:0;margin-top:4px;transition:all .2s}
+.opt-btn:hover:not([disabled]){border-color:#00f5a0;background:rgba(0,245,160,.05)}
+.opt-btn:hover:not([disabled]) .dot{border-color:#00f5a0}
+.opt-btn.correct{border-color:#00f5a0 !important;background:rgba(0,245,160,.1) !important;color:#00f5a0}
+.opt-btn.correct .dot{background:#00f5a0;border-color:#00f5a0}
+.opt-btn.wrong{border-color:#ff4d6d !important;background:rgba(255,77,109,.1) !important;color:#ff4d6d}
+.opt-btn.wrong .dot{background:#ff4d6d;border-color:#ff4d6d}
+.tf-group{display:grid;grid-template-columns:1fr 1fr;gap:.65rem}
+.tf-btn{background:#181c24;border:1px solid #1e2530;border-radius:10px;padding:1rem;color:#e8edf5;font-family:'Segoe UI',Arial,sans-serif;font-weight:600;font-size:1rem;cursor:pointer;transition:all .2s;text-align:center}
+.tf-btn.t-btn:hover:not([disabled]){border-color:#00f5a0;background:rgba(0,245,160,.08);color:#00f5a0}
+.tf-btn.f-btn:hover:not([disabled]){border-color:#ff4d6d;background:rgba(255,77,109,.08);color:#ff4d6d}
+.tf-btn.correct{border-color:#00f5a0 !important;background:rgba(0,245,160,.1) !important;color:#00f5a0 !important}
+.tf-btn.wrong{border-color:#ff4d6d !important;background:rgba(255,77,109,.1) !important;color:#ff4d6d !important}
+.short-wrap{display:flex;flex-direction:column;gap:.65rem}
+.short-input{background:#181c24;border:1px solid #1e2530;border-radius:10px;padding:.85rem 1rem;color:#e8edf5;font-family:'Segoe UI',Arial,sans-serif;font-size:.92rem;width:100%;outline:none}
+.short-input:focus{border-color:#00c3ff}
+.submit-btn{background:linear-gradient(135deg,#00f5a0,#00c3ff);border:none;border-radius:10px;padding:.8rem 1.4rem;color:#0a0c10;font-family:'Segoe UI',Arial,sans-serif;font-weight:700;font-size:.9rem;cursor:pointer;align-self:flex-start}
+.submit-btn:hover:not([disabled]){opacity:.85}
+.submit-btn:disabled{opacity:.4;cursor:not-allowed}
+.feedback{margin-top:1.1rem;padding:.9rem 1rem;border-radius:10px;font-size:.85rem;line-height:1.55;font-family:monospace;display:none}
+.feedback.show{display:block}
+.feedback.fb-correct{background:rgba(0,245,160,.08);border:1px solid rgba(0,245,160,.3);color:#00f5a0}
+.feedback.fb-wrong{background:rgba(255,77,109,.08);border:1px solid rgba(255,77,109,.3);color:#ff4d6d}
+.fb-label{font-weight:700;display:block;margin-bottom:.3rem;font-size:.78rem;letter-spacing:.1em;text-transform:uppercase}
+.nav-row{display:flex;justify-content:flex-end;margin-top:1.1rem}
+.next-btn{background:#181c24;border:1px solid #00f5a0;border-radius:10px;padding:.65rem 1.3rem;color:#00f5a0;font-family:'Segoe UI',Arial,sans-serif;font-weight:700;font-size:.88rem;cursor:pointer;display:none}
+.next-btn.show{display:inline-block}
+.next-btn:hover{background:#00f5a0;color:#0a0c10}
+.score-screen{display:none;text-align:center;padding:2.5rem 2rem;background:#111318;border:1px solid #1e2530;border-radius:14px;position:relative;overflow:hidden}
+.score-screen.show{display:block}
+.score-top-line{position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,#00f5a0,#00c3ff,#ff4d6d)}
+.score-lbl{font-family:monospace;font-size:.75rem;color:#5a6478;letter-spacing:.1em;text-transform:uppercase}
+.score-big{font-size:5rem;font-weight:800;line-height:1;color:#00f5a0;margin:.75rem 0 .4rem}
+.score-msg{font-size:1.1rem;font-weight:700;margin:1.25rem 0 .4rem}
+.score-sub{color:#5a6478;font-size:.83rem;font-family:monospace;margin-bottom:1.75rem}
+.restart-btn{background:linear-gradient(135deg,#00f5a0,#00c3ff);border:none;border-radius:10px;padding:.85rem 2rem;color:#0a0c10;font-family:'Segoe UI',Arial,sans-serif;font-weight:700;font-size:.95rem;cursor:pointer}
+.restart-btn:hover{opacity:.85}
+.review-list{text-align:left;margin-top:1.75rem;border-top:1px solid #1e2530;padding-top:1.25rem}
+.review-list h3{font-size:.75rem;font-family:monospace;color:#5a6478;letter-spacing:.1em;text-transform:uppercase;margin-bottom:.85rem}
+.r-item{padding:.75rem .9rem;border-radius:8px;margin-bottom:.45rem;font-size:.8rem;font-family:monospace;line-height:1.5;border:1px solid transparent}
+.r-item.rc{background:rgba(0,245,160,.05);border-color:rgba(0,245,160,.15)}
+.r-item.rw{background:rgba(255,77,109,.05);border-color:rgba(255,77,109,.15)}
+.r-mark{font-weight:700;margin-right:.4rem}
+.rc .r-mark{color:#00f5a0}
+.rw .r-mark{color:#ff4d6d}
+.r-exp{color:#5a6478;margin-top:.25rem;font-size:.75rem}
+.r-exp em{color:#00c3ff;font-style:normal}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <span class="tag">// INTERN TRAINING MODULE</span>
+  <h1>Cybersecurity Quiz</h1>
+  <p>Based on your field log &middot; Dec 2024 &ndash; Feb 2025</p>
+</div>
+
+<div class="quiz-container">
+  <div class="progress-wrap">
+    <div class="progress-bar"><div class="progress-fill" id="pFill" style="width:0%"></div></div>
+    <div class="progress-label" id="pLabel">1 / 37</div>
+  </div>
+
+  <div class="card" id="qCard">
+    <div class="card-top-line"></div>
+    <div class="q-meta">
+      <span class="q-num" id="qNum">Q01</span>
+      <span class="q-type" id="qType">Multiple Choice</span>
+    </div>
+    <div class="category" id="qCat"></div>
+    <div class="question" id="qText"></div>
+    <div id="qBody"></div>
+    <div class="feedback" id="fb">
+      <span class="fb-label" id="fbLbl"></span>
+      <span id="fbTxt"></span>
+    </div>
+    <div class="nav-row">
+      <button class="next-btn" id="nextBtn">Next &rarr;</button>
+    </div>
+  </div>
+
+  <div class="score-screen" id="scoreScreen">
+    <div class="score-top-line"></div>
+    <div class="score-lbl">Final Score</div>
+    <div class="score-big" id="sBig"></div>
+    <div class="score-lbl" id="sOut"></div>
+    <div class="score-msg" id="sMsg"></div>
+    <div class="score-sub" id="sSub"></div>
+    <button class="restart-btn" id="restartBtn">&#8635; Retake Quiz</button>
+    <div class="review-list">
+      <h3>// Review</h3>
+      <div id="reviewDiv"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+var Q=[
+{cat:"Email Security",type:"mcq",q:"What do SPF and DMARC records help protect against?",opts:["DDoS attacks on web servers","Email spoofing and phishing by verifying sender domains","Encrypting data stored on servers","Blocking malicious IPs at the firewall"],ans:1,exp:"SPF and DMARC verify that emails claiming to come from a domain are sent from authorized servers, preventing spoofing and impersonation attacks."},
+{cat:"Networking",type:"mcq",q:"What is Geo-Fencing in the context of cybersecurity?",opts:["A physical fence with sensors around a data center","Restricting or monitoring network access based on geographic location","A VPN that routes traffic through multiple countries","An intrusion detection method based on GPS coordinates"],ans:1,exp:"Geo-fencing creates virtual geographic boundaries that block or alert on access from specific countries or regions — you saw this on SonicWall with Geo IP blocking."},
+{cat:"Networking",type:"tf",q:"TCP prioritizes speed over reliability, making it ideal for live video streaming.",ans:false,exp:"False. TCP prioritizes reliability with error-checking and guaranteed delivery. UDP is faster with less error checking — preferred for live streaming and gaming."},
+{cat:"Identity & Access",type:"mcq",q:"In Azure Entra ID, what does an 'Interactive' sign-in mean?",opts:["A sign-in requiring physical device access","A sign-in where the user actively provides credentials (password, MFA, etc.)","A background service authenticating automatically without user input","A sign-in from an unrecognized IP address"],ans:1,exp:"Interactive sign-ins involve direct user input like entering a password or completing MFA. Non-interactive sign-ins happen silently in the background, like app token refreshes."},
+{cat:"Endpoint Security",type:"mcq",q:"In SentinelOne, when deciding if an alert is a False Positive or True Positive, which two factors matter most?",opts:["The user's job title and office location","The file signature and the file path","The time of day and day of week","The file size and creation date"],ans:1,exp:"The file signature (unique hash) and file path (where it executes from) are key. Legitimate software runs from expected paths; malware often runs from temp or unusual directories."},
+{cat:"Endpoint Security",type:"tf",q:"When adding a SentinelOne exclusion, excluding by file path is safer than excluding by file hash because paths are more specific.",ans:false,exp:"False. File hashes uniquely identify one exact file version and are more secure. Excluding by path is riskier — an attacker could place malware in that same path to bypass detection."},
+{cat:"Incident Response",type:"mcq",q:"A phishing email sent from a compromised internal employee account is especially dangerous because:",opts:["It bypasses firewall rules automatically","Recipients trust internal senders and are less likely to flag the email as suspicious","It uses IPv6 which most filters cannot inspect","DMARC cannot inspect internal email traffic"],ans:1,exp:"This happened in the Smilist incident — emails from a trusted internal address caused many more users to click, since they appeared to come from a known colleague."},
+{cat:"Malware & Threats",type:"mcq",q:"What is a CVE?",opts:["A type of ransomware that encrypts files with a unique key","A vendor patch released to fix a zero-day exploit","A standardized identifier for a publicly known cybersecurity vulnerability","A certificate used to verify software publishers"],ans:2,exp:"CVE (Common Vulnerabilities and Exposures) gives each known vulnerability a unique ID like CVE-2024-12345, allowing the industry to consistently reference and track specific security flaws."},
+{cat:"SIEM & Monitoring",type:"mcq",q:"In Wazuh, what is the correct order of log processing?",opts:["Wazuh Manager > IntegratorD > Indexer > Dashboard","Agent > IntegratorD > Dashboard > Wazuh Manager","Agent (Syslog) > IntegratorD > Wazuh Manager > Indexer > Dashboard","Syslog > Dashboard > Wazuh Manager > IntegratorD"],ans:2,exp:"Agents send Syslog files > IntegratorD reads them line by line > Wazuh Manager analyzes and applies rules > Indexer stores events > Dashboard displays them."},
+{cat:"SIEM & Monitoring",type:"tf",q:"Event IDs and Wazuh Rule IDs are the same thing — both are assigned by the operating system.",ans:false,exp:"False. Event IDs are assigned by the OS (Windows or Linux). Wazuh Rule IDs are assigned by Wazuh Manager after analyzing the logs to categorize complex behaviors."},
+{cat:"Email Security",type:"mcq",q:"In Microsoft Defender, what does Spam Digestion do?",opts:["Permanently deletes all spam before delivery","Quarantines suspected spam so the user can review and release it","Forwards spam to a security analyst for manual review","Automatically reports spam senders to Microsoft"],ans:1,exp:"Spam Digestion quarantines flagged emails and sends the user a digest to review — preventing blind delivery while keeping users in control of their inbox."},
+{cat:"Endpoint Security",type:"mcq",q:"What is the key difference between EDR and XDR in SentinelOne?",opts:["EDR is cloud-based; XDR runs on local servers","EDR monitors network traffic only; XDR monitors endpoints","EDR covers endpoints only; XDR collects data from multiple integrated platforms for broader behavior analysis","EDR is for Windows only; XDR covers all operating systems"],ans:2,exp:"EDR monitors endpoints. XDR also ingests telemetry from other tools like SaaS Alerts and cloud platforms — providing a broader picture for more accurate behavior analysis."},
+{cat:"Networking",type:"mcq",q:"To stop an attacker communicating with an infected endpoint, what is best practice in SentinelOne Network Control?",opts:["Block only inbound TCP traffic on port 443","Block the attacker's IP address for both inbound and outbound directions, covering TCP and UDP","Block all UDP traffic across the network","Disable the endpoint's network adapter in Windows Device Manager"],ans:1,exp:"Block the specific IP in both directions (inbound and outbound) and both protocols (TCP and UDP) to ensure all communication is cut off, even if the attacker changes ports or methods."},
+{cat:"Incident Response",type:"short",q:"What free tool lets you submit a suspicious file or its hash to check it against 70+ antivirus engines and threat databases?",keys:["virustotal","virus total"],ans:"VirusTotal",exp:"VirusTotal checks a file or hash against 70+ AV engines. It is a standard first step during phishing incident response to quickly determine if a file is known-malicious."},
+{cat:"Malware & Threats",type:"mcq",q:"What is session hijacking?",opts:["Physically stealing a user's device to gain access","Cracking a user password through brute force over time","Stealing session tokens to log in as a user — bypassing credentials and MFA entirely","Intercepting and modifying data packets in transit on the network"],ans:2,exp:"Session hijacking steals authentication tokens so the attacker can impersonate the user without needing their password. MFA does not help since the session is already authenticated."},
+{cat:"Networking",type:"tf",q:"HTTPS is more secure than HTTP because it encrypts packets using TLS, limiting visibility to ISPs and attackers on the network.",ans:true,exp:"Correct. HTTP sends data in plaintext visible to anyone on the network. HTTPS uses TLS to encrypt traffic in transit, protecting it from eavesdropping and tampering."},
+{cat:"Malware & Threats",type:"mcq",q:"What is keylogging?",opts:["Monitoring which applications are running on a target system","Recording all keystrokes made by a user — capturing passwords, messages, and commands","Intercepting encrypted network packets between two hosts","Scanning a target system for open ports and services"],ans:1,exp:"Keyloggers capture every key pressed by the user. They can be hardware or software-based and are a common method for silently stealing login credentials."},
+{cat:"Endpoint Security",type:"mcq",q:"What is FlareVM primarily used for in cybersecurity?",opts:["Monitoring network traffic across all endpoints in real time","A cloud-based SIEM platform for log aggregation","A Windows VM pre-configured with tools for malware analysis and reverse engineering","An automated patch management and deployment system"],ans:2,exp:"FlareVM (by Mandiant) is a Windows VM loaded with hundreds of forensic and reverse engineering tools. The Snapshot feature lets you roll back the VM after analyzing a malicious file."},
+{cat:"Microsoft Security",type:"mcq",q:"What is Microsoft Purview most useful for during a security investigation?",opts:["Deploying software updates to endpoints across the organization","Blocking spam emails before they reach user mailboxes","Accessing detailed audit logs to investigate user activity and detect potential spoofing","Managing firewall rules and policies across Office 365 tenants"],ans:2,exp:"Microsoft Purview provides deep compliance and audit logs that go beyond standard logs — useful for tracing user activity, detecting unusual behavior, and investigating potential account spoofing."},
+{cat:"Incident Response",type:"mcq",q:"A Docusign email arrives for an employee not expecting to sign anything. You verify it came from legitimate Docusign servers. What is the best next step?",opts:["Immediately block the Docusign domain in your email filter","Delete the email and close the ticket as a false alarm","Have the employee open the document link to check the contents","Have the employee contact the requesting company directly to verify — their account may be compromised"],ans:3,exp:"Real Docusign infrastructure does not mean the requesting party is safe — their account could be compromised. Always verify through a separate known contact method, not by clicking the link."},
+{cat:"Endpoint Security",type:"short",q:"What is the SentinelOne feature that cuts an endpoint off from all network traffic to contain a threat, while still allowing management console access?",keys:["isolat","network isolation","device isolation"],ans:"Device Isolation",exp:"Device Isolation severs the endpoint from all network traffic except the SentinelOne management console, containing the threat in place while the investigation continues."},
+{cat:"Ransomware",type:"mcq",q:"During the Akira ransomware case review, what was key to understanding how the attackers initially got in without triggering alerts?",opts:["They exploited a specific CVE — a known vulnerability — present on the system","They brute-forced the admin password over a period of several weeks","They convinced an employee to voluntarily disable antivirus software","They used a brand-new ransomware strain not present in any threat database"],ans:0,exp:"The attackers leveraged a specific CVE to infiltrate undetected. This is why tracking CVEs and applying patches promptly is critical — known vulnerabilities must be patched before attackers exploit them."},
+{cat:"SOC Fundamentals",type:"mcq",q:"What is the primary goal of a SOC analyst?",opts:["Deploy new software updates across all endpoints","Monitor, detect, investigate, and respond to security threats to protect the organization","Write firewall rules and manage network hardware","Conduct penetration tests on client infrastructure"],ans:1,exp:"A SOC analyst's core mission is continuous monitoring of the environment, detecting threats early, investigating alerts to determine their severity, and responding to contain and remediate incidents before damage is done."},
+{cat:"SOC Fundamentals",type:"mcq",q:"What is a SIEM?",opts:["A tool that blocks malicious files on endpoints in real time","A firewall that filters traffic between network segments","A platform that aggregates and correlates logs from across the environment to detect threats and generate alerts","A vulnerability scanner that checks systems for missing patches"],ans:2,exp:"SIEM stands for Security Information and Event Management. It collects logs from many sources (firewalls, endpoints, cloud apps, etc.), correlates events using rules, and surfaces alerts for analysts to investigate. Wazuh is the SIEM you use."},
+{cat:"SOC Fundamentals",type:"mcq",q:"What is Wazuh?",opts:["A commercial endpoint detection platform similar to CrowdStrike","An open-source SIEM and XDR platform that collects logs, detects threats using rules, and provides a centralized dashboard for investigation","A network firewall with built-in intrusion prevention","A patch management tool for deploying Windows updates"],ans:1,exp:"Wazuh is an open-source SIEM and XDR. Agents installed on endpoints send Syslog files to the Wazuh Manager, which applies rules and sends alerts to the Indexer and Dashboard. You use it alongside SentinelOne at DSS."},
+{cat:"SOC Fundamentals",type:"mcq",q:"What is an EDR?",opts:["A tool that scans email attachments for malicious links","Endpoint Detection and Response — software that monitors endpoint activity in real time, detects threats, and allows analysts to respond","A network device that filters traffic between VLANs","A backup system that restores files after a ransomware attack"],ans:1,exp:"EDR (Endpoint Detection & Response) is installed on endpoints (laptops, servers, etc.) and monitors process activity, file changes, and network connections in real time. It can isolate devices, quarantine files, and roll back changes. SentinelOne is the EDR you use."},
+{cat:"SOC Fundamentals",type:"mcq",q:"What is an XDR?",opts:["An EDR limited to Windows endpoints only","Extended Detection and Response — it expands EDR by ingesting telemetry from multiple platforms like cloud apps, email, and network tools for broader correlation","A type of firewall that inspects encrypted HTTPS traffic","A compliance reporting tool for auditing user access logs"],ans:1,exp:"XDR (Extended Detection & Response) goes beyond endpoints. It pulls telemetry from SaaS platforms, cloud environments, email, and more — allowing cross-platform correlation that catches threats EDR alone might miss."},
+{cat:"Incident Response",type:"mcq",q:"A client reports clicking a suspicious phishing link. What do you check first?",opts:["Immediately reimage the machine without investigation","Check sign-in logs in Entra ID for unusual authentication activity, then review SentinelOne alerts for the endpoint and run the URL through VirusTotal","Call the user and ask them to change their password","Block the domain at the firewall and close the ticket"],ans:1,exp:"First, assess scope: check Entra sign-in logs for compromised credentials, review SentinelOne for any malicious process execution on the endpoint, and run the URL/file through VirusTotal. Only then can you determine the right remediation — isolate the device if needed, reset credentials, and trace lateral movement."},
+{cat:"Incident Response",type:"mcq",q:"Kaseya generates a SaaS login anomaly alert. What do you check first?",opts:["Reboot the affected machine and monitor for further alerts","Check the sign-in logs — look at the IP address, location, device, and whether it matches the user's normal login pattern","Immediately disable the user account without further investigation","Check the firewall logs for blocked outbound connections"],ans:1,exp:"A login anomaly means the system flagged something unusual — impossible travel, new country, unknown device. First check the sign-in logs in Entra or SaaS Alerts: what IP, what country, what time, what device? Does it match the user's normal behavior? Then contact the user to verify before taking action."},
+{cat:"SOC Fundamentals",type:"mcq",q:"What is a false positive in the context of security alerts?",opts:["An alert that correctly identifies a real threat","An alert triggered by legitimate, safe activity that the system incorrectly flagged as malicious","A threat that was missed entirely by the detection system","A duplicate alert generated by two different tools for the same event"],ans:1,exp:"A false positive is when the security tool fires an alert on something benign — for example, SentinelOne flagging a trusted internal script as malware. Tuning false positives (via exclusions or suppression rules) reduces alert fatigue so analysts can focus on real threats."},
+{cat:"SOC Fundamentals",type:"mcq",q:"What is the difference between a threat and a vulnerability?",opts:["They are the same thing — both refer to weaknesses in a system","A vulnerability is a weakness in a system; a threat is a potential actor or event that could exploit that weakness","A threat is a software bug; a vulnerability is a hacker","A vulnerability is an active attack; a threat is a patch that hasn't been applied yet"],ans:1,exp:"A vulnerability is a flaw or weakness (e.g. an unpatched CVE). A threat is anything that could exploit it — a hacker, malware, or an insider. Risk is created when a threat actor meets a vulnerability. Patching removes the vulnerability; monitoring watches for the threat."},
+{cat:"Endpoint Security",type:"mcq",q:"How does behavioral detection work in an EDR like SentinelOne?",opts:["It compares every file against a list of known malware hashes","It monitors sequences of actions and behaviors — process trees, memory access, file writes — and flags patterns that match known attack techniques, even without a known signature","It scans the hard drive nightly for suspicious files","It blocks all unsigned executables from running"],ans:1,exp:"Behavioral detection watches what a process does, not just what it is. If a Word doc spawns PowerShell, which then connects to an external IP and drops a file — that chain of behavior matches attack patterns even if the malware has never been seen before. This is how SentinelOne catches zero-days."},
+{cat:"SIEM & Monitoring",type:"mcq",q:"How does a SIEM like Wazuh process logs from different sources?",opts:["It only accepts logs in a single standardized format from approved vendors","Agents or integrations collect logs from each source, normalize them into a common format, and the SIEM applies detection rules to identify patterns across all sources","It reads logs directly from hard drives using physical access to each machine","It only processes logs that are manually uploaded by an analyst"],ans:1,exp:"SIEMs normalize logs from diverse sources — Windows Event logs, Linux Syslog, firewall logs, cloud app logs — into a consistent format. Then they apply correlation rules across all of them. Wazuh uses agents on endpoints plus integrations for other sources, and Rule IDs to classify behaviors after normalization."},
+{cat:"Malware & Threats",type:"mcq",q:"How do attackers commonly evade EDR detection?",opts:["By using very large file sizes that slow down the EDR scanner","By living off the land — using legitimate built-in tools like PowerShell, WMI, or certutil to carry out attacks so the activity blends in with normal system behavior","By disabling all network adapters before executing malware","By encrypting their malware with standard ZIP compression"],ans:1,exp:"Living-off-the-land (LotL) attacks abuse trusted, built-in tools that EDRs are less likely to block outright. Attackers also use process injection, fileless malware (runs in memory only), and signed binaries to blend in. This is why behavioral detection and process tree analysis matter — not just signature matching."},
+{cat:"Incident Response",type:"mcq",q:"How would you validate a suspicious outbound connection flagged in SentinelOne?",opts:["Immediately block the IP at the firewall and close the alert","Check the destination IP in VirusTotal and threat intel feeds, review the process that initiated the connection, look at what the process was doing before and after, and check if the IP has been seen in other alerts","Reimage the machine and move on","Ask the end user if they recognize the connection"],ans:1,exp:"Validation means context-gathering: run the destination IP through VirusTotal and check threat intel. Look at the process tree — what spawned the connection? Was it a browser, a script, a service? Is the destination a known CDN or a suspicious hosted IP? Cross-check with SaaS Alerts and Wazuh for corroborating signals before deciding to block or escalate."},
+{cat:"Incident Response",type:"mcq",q:"How would you investigate a suspicious PowerShell execution alert?",opts:["Delete the PowerShell process immediately and reimage the machine","Review the full command line arguments in the alert, check the parent process that launched PowerShell, look for encoded or obfuscated commands, and cross-reference the destination if it made a network connection","Ask the user if they ran a PowerShell script recently and close the ticket if they say yes","Disable PowerShell on the endpoint via Group Policy and monitor"],ans:1,exp:"Suspicious PowerShell needs full context: what was the exact command (base64 encoded commands are a red flag), what process launched it (Word or Excel launching PowerShell is almost always malicious), did it download anything or connect outbound, and does the behavior match known attack patterns like a Meterpreter or Cobalt Strike beacon."},
+{cat:"Incident Response",type:"mcq",q:"How would you respond to an active ransomware attack?",opts:["Wait for the ransomware to finish encrypting, then restore from backup","Immediately isolate all affected endpoints via SentinelOne, identify the attack vector, blocklist the malware signature, block attacker IPs, preserve forensic evidence, notify stakeholders, and restore from clean backups after full containment","Reboot the affected machines to stop the encryption process","Pay the ransom immediately to minimize downtime"],ans:1,exp:"Ransomware response: 1) Isolate affected endpoints immediately via SentinelOne to stop lateral spread. 2) Identify patient zero and the initial access vector. 3) Blocklist the signature and attacker IPs in SentinelOne. 4) Preserve logs for forensics. 5) Notify management and affected parties. 6) Remediate fully before restoring from verified clean backups. Never pay without exhausting all options first."}
+];
+
+var cur=0,score=0,answered=false,results=[];
+
+function pad(n){return (n<10?'0':'')+n;}
+
+function render(){
+  answered=false;
+  var q=Q[cur];
+  document.getElementById('qNum').textContent='Q'+pad(cur+1);
+  document.getElementById('qCat').textContent=q.cat;
+  document.getElementById('qText').textContent=q.q;
+  var fb=document.getElementById('fb');
+  fb.className='feedback';
+  var nb=document.getElementById('nextBtn');
+  nb.className='next-btn';
+  var pct=(cur/Q.length)*100;
+  document.getElementById('pFill').style.width=pct+'%';
+  document.getElementById('pLabel').textContent=(cur+1)+' / '+Q.length;
+  var types={mcq:'Multiple Choice',tf:'True / False',short:'Short Answer'};
+  document.getElementById('qType').textContent=types[q.type];
+  var body=document.getElementById('qBody');
+  body.innerHTML='';
+
+  if(q.type==='mcq'){
+    var wrap=document.createElement('div');
+    wrap.className='options';
+    q.opts.forEach(function(txt,i){
+      var btn=document.createElement('button');
+      btn.className='opt-btn';
+      var dot=document.createElement('span');
+      dot.className='dot';
+      var label=document.createElement('span');
+      label.textContent=txt;
+      btn.appendChild(dot);
+      btn.appendChild(label);
+      (function(idx){
+        btn.addEventListener('click',function(){
+          if(answered)return;
+          answered=true;
+          var btns=wrap.querySelectorAll('.opt-btn');
+          btns.forEach(function(b){b.disabled=true;});
+          btns[q.ans].classList.add('correct');
+          if(idx!==q.ans)btns[idx].classList.add('wrong');
+          var ok=idx===q.ans;
+          if(ok)score++;
+          results.push({q:q.q,ok:ok,exp:q.exp});
+          showFB(ok,q.exp,null);
+        });
+      })(i);
+      wrap.appendChild(btn);
+    });
+    body.appendChild(wrap);
+
+  } else if(q.type==='tf'){
+    var wrap=document.createElement('div');
+    wrap.className='tf-group';
+    [{lbl:'True',val:true,cls:'t-btn'},{lbl:'False',val:false,cls:'f-btn'}].forEach(function(item){
+      var btn=document.createElement('button');
+      btn.className='tf-btn '+item.cls;
+      btn.textContent=item.lbl;
+      (function(v){
+        btn.addEventListener('click',function(){
+          if(answered)return;
+          answered=true;
+          var btns=wrap.querySelectorAll('.tf-btn');
+          btns.forEach(function(b){b.disabled=true;});
+          var correctBtn=q.ans?btns[0]:btns[1];
+          correctBtn.classList.add('correct');
+          var ok=v===q.ans;
+          if(!ok){
+            var wrongBtn=v?btns[0]:btns[1];
+            wrongBtn.classList.add('wrong');
+          }
+          if(ok)score++;
+          results.push({q:q.q,ok:ok,exp:q.exp});
+          showFB(ok,q.exp,null);
+        });
+      })(item.val);
+      wrap.appendChild(btn);
+    });
+    body.appendChild(wrap);
+
+  } else {
+    var wrap=document.createElement('div');
+    wrap.className='short-wrap';
+    var inp=document.createElement('input');
+    inp.type='text';
+    inp.className='short-input';
+    inp.placeholder='Type your answer...';
+    var sbtn=document.createElement('button');
+    sbtn.className='submit-btn';
+    sbtn.textContent='Submit Answer';
+    function doSubmit(){
+      if(answered)return;
+      var val=inp.value.trim().toLowerCase();
+      if(!val)return;
+      answered=true;
+      inp.disabled=true;
+      sbtn.disabled=true;
+      var ok=q.keys.some(function(k){return val.indexOf(k.toLowerCase())>=0;});
+      if(ok)score++;
+      var extra=ok?null:'Expected: '+q.ans;
+      results.push({q:q.q,ok:ok,exp:q.exp,extra:extra});
+      showFB(ok,q.exp,extra);
+    }
+    inp.addEventListener('keydown',function(e){if(e.key==='Enter')doSubmit();});
+    sbtn.addEventListener('click',doSubmit);
+    wrap.appendChild(inp);
+    wrap.appendChild(sbtn);
+    body.appendChild(wrap);
+  }
+}
+
+function showFB(ok,exp,extra){
+  var fb=document.getElementById('fb');
+  fb.className='feedback show '+(ok?'fb-correct':'fb-wrong');
+  document.getElementById('fbLbl').textContent=ok?'Correct':'Incorrect';
+  document.getElementById('fbTxt').textContent=(extra?extra+' -- ':'')+exp;
+  document.getElementById('nextBtn').className='next-btn show';
+}
+
+document.getElementById('nextBtn').addEventListener('click',function(){
+  cur++;
+  if(cur>=Q.length){showScore();}
+  else{render();}
+});
+
+function showScore(){
+  document.getElementById('qCard').style.display='none';
+  document.getElementById('pFill').style.width='100%';
+  document.getElementById('pLabel').textContent=Q.length+' / '+Q.length;
+  var pct=Math.round(score/Q.length*100);
+  var ss=document.getElementById('scoreScreen');
+  ss.className='score-screen show';
+  document.getElementById('sBig').textContent=pct+'%';
+  document.getElementById('sOut').textContent=score+' correct out of '+Q.length;
+  var msg,sub;
+  if(pct>=90){msg='Outstanding!';sub='Nearly perfect. Keep this up.';}
+  else if(pct>=75){msg='Strong Work';sub='Solid fundamentals. Review what you missed.';}
+  else if(pct>=60){msg='Getting There';sub='Good progress -- revisit your field log for missed topics.';}
+  else{msg='Keep Studying';sub='Go back to the tools hands-on and review your daily logs.';}
+  document.getElementById('sMsg').textContent=msg;
+  document.getElementById('sSub').textContent=sub;
+  var rv=document.getElementById('reviewDiv');
+  rv.innerHTML='';
+  results.forEach(function(r,i){
+    var d=document.createElement('div');
+    d.className='r-item '+(r.ok?'rc':'rw');
+    var mark=document.createElement('span');
+    mark.className='r-mark';
+    mark.textContent=(r.ok?'+ ':'- ')+'Q'+pad(i+1)+'. ';
+    d.appendChild(mark);
+    d.appendChild(document.createTextNode(r.q));
+    if(!r.ok){
+      var expDiv=document.createElement('div');
+      expDiv.className='r-exp';
+      expDiv.innerHTML='<em>'+r.exp.substring(0,120)+'...</em>';
+      d.appendChild(expDiv);
+    }
+    rv.appendChild(d);
+  });
+}
+
+document.getElementById('restartBtn').addEventListener('click',function(){
+  cur=0;score=0;answered=false;results=[];
+  document.getElementById('scoreScreen').className='score-screen';
+  document.getElementById('qCard').style.display='';
+  render();
+});
+
+render();
+})();
+</script>
+</body>
+</html>
